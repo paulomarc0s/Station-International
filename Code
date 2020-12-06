@@ -1,0 +1,88 @@
+<html>
+
+<head>
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js" integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==" crossorigin=""></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <style>
+        #issMap {
+            height: 360px;
+            width: auto;
+        }
+    </style>
+
+    <title>Fetch JSON from API and map lat lon</title>
+
+</head>
+
+
+<body class="p-3 mb-2 bg-light text-dark">
+
+
+
+    <h4>Station International</h4>
+
+    <p>
+        latitude: <span id="lat"></span>° <br /> longitude: <span id="lon"></span>° <br />Velocity: <span id="vel"></span>
+    </p>
+
+    <div id="issMap"></div>
+
+    <script>
+        const mymap = L.map('issMap').setView([0, 0], 6);
+
+        const attribution =
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+        const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const tiles = L.tileLayer(tileUrl, {
+            attribution
+        });
+        tiles.addTo(mymap);
+
+
+
+
+        const issIcon = L.icon({
+            iconUrl: './iss200.png',
+            iconSize: [50, 32],
+            iconAnchor: [25, 16]
+        });
+
+        var marker = L.marker([0, 0], {
+            icon: issIcon
+        }).addTo(mymap);
+
+        const api_url = 'https://api.wheretheiss.at/v1/satellites/25544';
+
+        var firstTime = true;
+
+        async function getISS() {
+
+            const response = await fetch(api_url);
+            const data = await response.json();
+            const {
+                latitude,
+                longitude,
+                velocity
+
+            } = data;
+
+
+            mymap.setView([latitude, longitude, velocity], mymap.getZoom());
+            marker.setLatLng([latitude, longitude, velocity]);
+
+            document.getElementById('lat').textContent = latitude.toFixed(2);
+            document.getElementById('lon').textContent = longitude.toFixed(2);
+            document.getElementById('vel').textContent = velocity.toFixed(2);
+
+        }
+
+        getISS();
+        setInterval(getISS, 1000);
+    </script>
+</body>
+
+</html>
